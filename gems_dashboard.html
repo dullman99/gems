@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="젬스 대시보드">
+<meta name="mobile-web-app-capable" content="yes">
+<title>나의 젬스 대시보드</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --purple: #7F77DD;
+    --purple-light: #EEEDFE;
+    --purple-dark: #534AB7;
+    --blue: #378ADD;
+    --blue-light: #E6F1FB;
+    --blue-dark: #185FA5;
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #993C1D;
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #0F6E56;
+    --bg: #F5F5F7;
+    --surface: #FFFFFF;
+    --text: #1A1A2E;
+    --text-sub: #6B7280;
+    --text-hint: #9CA3AF;
+    --border: rgba(0,0,0,0.08);
+    --border-md: rgba(0,0,0,0.14);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-hover: 0 6px 20px rgba(0,0,0,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F0F14;
+      --surface: #1C1C26;
+      --text: #F0F0F5;
+      --text-sub: #9CA3AF;
+      --text-hint: #6B7280;
+      --border: rgba(255,255,255,0.08);
+      --border-md: rgba(255,255,255,0.14);
+      --purple-light: #2D2B50;
+      --blue-light: #1A2840;
+      --coral-light: #301A12;
+      --green-light: #0E2A20;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(245,245,247,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 14px 20px 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .header { background: rgba(15,15,20,0.85); }
+  }
+
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-gem { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #7F77DD, #378ADD); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .logo-text { font-size: 16px; font-weight: 700; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-hint); flex-shrink: 0; }
+  .search-input {
+    width: 100%;
+    padding: 9px 14px 9px 34px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border-md);
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--purple); }
+  .search-input::placeholder { color: var(--text-hint); }
+
+  /* ── Stats ── */
+  .stats-row { display: flex; gap: 8px; padding: 12px 20px 0; }
+  .stat-pill {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text-sub);
+  }
+  .stat-pill strong { color: var(--text); font-weight: 600; }
+
+  /* ── Filter ── */
+  .filter-scroll {
+    display: flex;
+    gap: 7px;
+    padding: 10px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .fbtn {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 0.5px solid var(--border-md);
+    background: var(--surface);
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .fbtn:active { transform: scale(0.96); }
+  .fbtn.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 12px;
+    padding: 4px 20px 100px;
+  }
+
+  /* iPad landscape: 더 많은 컬럼 */
+  @media (min-width: 900px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; padding: 4px 28px 100px; }
+    .header { padding: 16px 28px 10px; }
+    .stats-row { padding: 12px 28px 0; }
+    .filter-scroll { padding: 10px 28px; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .card:hover, .card:active { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .card:active { transform: scale(0.97); }
+
+  .card-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 20px; }
+  .card-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.35; }
+  .card-desc { font-size: 11px; color: var(--text-sub); line-height: 1.5; }
+  .card-tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 10px; margin-top: 8px; }
+
+  /* ── 카테고리별 색 ── */
+  .cat-상담  .card::before { background: var(--purple); }
+  .cat-상담  .card-icon { background: var(--purple-light); }
+  .cat-상담  .card-tag { background: var(--purple-light); color: var(--purple-dark); }
+  .cat-교육  .card::before { background: var(--blue); }
+  .cat-교육  .card-icon { background: var(--blue-light); }
+  .cat-교육  .card-tag { background: var(--blue-light); color: var(--blue-dark); }
+  .cat-창작  .card::before { background: var(--coral); }
+  .cat-창작  .card-icon { background: var(--coral-light); }
+  .cat-창작  .card-tag { background: var(--coral-light); color: var(--coral-dark); }
+  .cat-생산성 .card::before { background: var(--green); }
+  .cat-생산성 .card-icon { background: var(--green-light); }
+  .cat-생산성 .card-tag { background: var(--green-light); color: var(--green-dark); }
+
+  /* ── Empty ── */
+  .empty { text-align: center; padding: 4rem 1rem; color: var(--text-hint); font-size: 14px; display: none; }
+
+  /* ── Modal ── */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .modal-bg.open { display: flex; }
+
+  @media (min-width: 600px) {
+    .modal-bg { align-items: center; }
+    .modal { border-radius: var(--radius-lg) !important; max-width: 380px; margin: 0 auto; }
+  }
+
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+    animation: slideUp 0.22s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-handle { width: 36px; height: 4px; background: var(--border-md); border-radius: 2px; margin: 0 auto 1.2rem; }
+  .modal-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem; }
+  .modal-close { background: var(--bg); border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 14px; cursor: pointer; color: var(--text-sub); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .modal-icon { font-size: 30px; margin-bottom: 6px; }
+  .modal-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .modal-cat { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+  .modal-desc { font-size: 14px; color: var(--text-sub); line-height: 1.65; margin-bottom: 1.25rem; }
+  .modal-open-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 14px;
+    border-radius: var(--radius-md);
+    background: var(--purple);
+    color: #fff;
+    font-size: 15px; font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+    border: none; cursor: pointer;
+  }
+  .modal-open-btn:active { opacity: 0.85; }
+
+  /* ── 설치 안내 배너 ── */
+  .install-banner {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    font-size: 12px;
+    padding: 10px 18px;
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 300;
+    white-space: nowrap;
+    display: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-gem">✨</div>
+      <div>
+        <div class="logo-text">나의 젬스 대시보드</div>
+        <div class="logo-sub">박 선생님 전용 · Google Gems 15</div>
+      </div>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-input" type="text" id="srch" placeholder="젬스 이름 검색..." oninput="applyFilter()">
+  </div>
+</header>
+
+<div class="stats-row">
+  <div class="stat-pill">전체 <strong id="tot">15</strong>개</div>
+  <div class="stat-pill">표시 <strong id="vis">15</strong>개</div>
+</div>
+
+<div class="filter-scroll" id="frow"></div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">검색 결과가 없습니다 🔍</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="mbg" onclick="closeMif(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div>
+        <div class="modal-icon" id="micon"></div>
+        <div class="modal-title" id="mtitle"></div>
+        <div class="modal-cat" id="mcat"></div>
+      </div>
+      <button class="modal-close" onclick="closeM()">✕</button>
+    </div>
+    <p class="modal-desc" id="mdesc"></p>
+    <a class="modal-open-btn" id="mlink" href="#" target="_blank" rel="noopener">
+      <span>젬스 열기</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </a>
+  </div>
+</div>
+
+<div class="install-banner" id="installBanner" onclick="this.style.display='none'">
+  📱 Safari에서 "홈 화면에 추가"를 눌러 앱으로 설치하세요 ✕
+</div>
+
+<script>
+const gems = [
+  { name:'동기유발',          icon:'🔥', cat:'상담',  desc:'학생들의 학습 동기를 높이는 전략과 활동을 제안합니다. 상담 장면에서 바로 활용 가능한 동기 유발 기법을 제공합니다.', url:'https://gemini.google.com/gem/1Zzi_ZQEy3ND_dcOtp902J_Y-obUtukVv?usp=sharing' },
+  { name:'콘티제작',          icon:'🎨', cat:'창작',  desc:'수업·영상·발표용 콘티를 구조적으로 빠르게 제작합니다.', url:'https://gemini.google.com/gem/1bqRX8xS2YtuC2vdP3oJrzUDtv0VwzhXa?usp=sharing' },
+  { name:'학습상담 자동화',   icon:'📚', cat:'상담',  desc:'학습 관련 상담 내용을 자동으로 정리하고 개입 방향을 제시합니다.', url:'https://gemini.google.com/gem/1kPiGD5GBMu7oxteat1HExn1mnOIhuVTF?usp=sharing' },
+  { name:'아들 상담',         icon:'👦', cat:'상담',  desc:'남학생 특화 상담 흐름과 대화 전략을 지원합니다.', url:'https://gemini.google.com/gem/1nSVq_73xqkRz_3QjlwA1upHkwNfZRbig?usp=sharing' },
+  { name:'가사생성',          icon:'🎵', cat:'창작',  desc:'주제와 분위기에 맞는 가사를 창작합니다.', url:'https://gemini.google.com/gem/1sBxnqkU7Zoo_9MpprGElJ8eCIm-5BSae?usp=sharing' },
+  { name:'프로필 사진 생성',  icon:'🖼️', cat:'창작',  desc:'용도에 맞는 프로필 이미지 프롬프트 및 스타일을 생성합니다.', url:'https://gemini.google.com/gem/1GJVi6hUZEWj6HHMopZFkDZsAw9wUWmKb?usp=sharing' },
+  { name:'가계도 제작',       icon:'🌳', cat:'상담',  desc:'내담자 가족관계를 가계도 형식으로 구조화합니다.', url:'https://gemini.google.com/gem/1WoYL7IYNV4FiqAMlzPtJ2SVNMRhEk9bo?usp=sharing' },
+  { name:'좋은수업용 포토카드',icon:'📸', cat:'교육',  desc:'수업에 활용할 수 있는 포토카드 문구와 구성을 제작합니다.', url:'https://gemini.google.com/gem/19gms_wWumER8ASoWHk7ZtelsHJJWmqKz?usp=sharing' },
+  { name:'옵시디언 지식구조화',icon:'🗂️', cat:'생산성', desc:'Obsidian 노트를 체계적인 지식 구조로 정리합니다.', url:'https://gemini.google.com/gem/1osl2YSm9ke21AGnH1KR9Q7Hyhfpg98TG?usp=sharing' },
+  { name:'상담 자비스',       icon:'🤖', cat:'상담',  desc:'상담 업무 전반을 보조하는 AI 어시스턴트입니다.', url:'https://gemini.google.com/gem/1QXyp6XJbajYwYdz65d06Xaa_9W8L_mEU?usp=sharing' },
+  { name:'타로카드',          icon:'🃏', cat:'상담',  desc:'타로카드를 활용한 자기성찰 및 상담 보조 도구입니다.', url:'https://gemini.google.com/gem/1CvMpFp7ye5FYxTYQ1IMTToRHQc-E_dIB?usp=sharing' },
+  { name:'포토카드',          icon:'🖼', cat:'상담',  desc:'감성적인 포토카드 디자인 문구와 레이아웃을 생성합니다.', url:'https://gemini.google.com/gem/1nHQcVb-l8Lee-HicTUFffAUWYVDH5uAy?usp=sharing' },
+  { name:'종합심리보고서',    icon:'🧾', cat:'상담',  desc:'심리검사 결과를 바탕으로 종합 보고서를 자동 작성합니다.', url:'https://gemini.google.com/gem/1xPJ07d3FK29Q9PuxLxF7tXbETka79Hn0?usp=sharing' },
+  { name:'교류분석',          icon:'🔄', cat:'상담',  desc:'TA 이론 기반의 자아상태 분석과 상담 전략을 제공합니다.', url:'https://gemini.google.com/gem/17CZOc-v-uxnpc6-GPUwK8DyYXuMkq41O?usp=sharing' },
+  { name:'사례보고서 자동화', icon:'📋', cat:'상담',  desc:'상담 사례보고서 양식을 자동으로 작성·정리합니다.', url:'https://gemini.google.com/gem/14ELvT3UqgeNqHoOexaUBUMcK1vDlNpnb?usp=sharing' },
+];
+
+let curCat = '전체', curSearch = '';
+
+// 필터 버튼 생성
+const cats = ['전체', ...new Set(gems.map(g => g.cat))];
+document.getElementById('frow').innerHTML = cats.map((c, i) =>
+  `<button class="fbtn${i === 0 ? ' active' : ''}" onclick="setCat('${c}',this)">${c}</button>`
+).join('');
+
+function render() {
+  const list = gems.filter(g =>
+    (curCat === '전체' || g.cat === curCat) &&
+    (g.name.includes(curSearch) || g.desc.includes(curSearch))
+  );
+  document.getElementById('vis').textContent = list.length;
+  document.getElementById('tot').textContent = gems.length;
+  document.getElementById('empty').style.display = list.length ? 'none' : 'block';
+  document.getElementById('grid').innerHTML = list.map(g => {
+    const idx = gems.indexOf(g);
+    return `<div class="card cat-${g.cat}" onclick="openM(${idx})">
+      <div class="card-icon">${g.icon}</div>
+      <div class="card-name">${g.name}</div>
+      <div class="card-desc">${g.desc}</div>
+      <span class="card-tag">${g.cat}</span>
+    </div>`;
+  }).join('');
+}
+
+function setCat(cat, btn) {
+  curCat = cat;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function applyFilter() {
+  curSearch = document.getElementById('srch').value;
+  render();
+}
+
+function openM(i) {
+  const g = gems[i];
+  document.getElementById('micon').textContent = g.icon;
+  document.getElementById('mtitle').textContent = g.name;
+  document.getElementById('mcat').textContent = g.cat + ' 카테고리';
+  document.getElementById('mdesc').textContent = g.desc;
+  document.getElementById('mlink').href = g.url;
+  document.getElementById('mbg').classList.add('open');
+}
+
+function closeM() { document.getElementById('mbg').classList.remove('open'); }
+function closeMif(e) { if (e.target.id === 'mbg') closeM(); }
+
+// 아이패드 Safari에서 홈 화면 추가 안내
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandalone = window.navigator.standalone === true;
+if (isIos && !isInStandalone) {
+  setTimeout(() => {
+    document.getElementById('installBanner').style.display = 'block';
+    setTimeout(() => { document.getElementById('installBanner').style.display = 'none'; }, 6000);
+  }, 1500);
+}
+
+render();
+</script>
+</body>
+</html>
