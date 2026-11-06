@@ -140,7 +140,7 @@
 
 <header>
   <h1>🗂 나의 프로젝트 대시보드</h1>
-  <p>박 선생님 전용 · Claude Projects 13 + Gem 2 + 로컬 프로그램 1</p>
+  <p>박 선생님 전용 · Claude Projects 13 + Gem 2 + 로컬 프로그램 2</p>
 </header>
 
 <div class="grid" id="grid"></div>
@@ -174,6 +174,7 @@ const gems = [
   { name:'이론별 상담사례보고서', icon:'📋', cat:'상담', desc:'다양한 상담 이론을 기반으로 사례보고서를 작성할 수 있도록 지원하는 Google Gem입니다.', url:'https://gemini.google.com/gem/1gTUzG1rk0yHaYZx8my9PFdRsYDnLj4oO?usp=sharing' },
   { name:'티처콜용 보고서 생성', icon:'📝', cat:'상담', desc:'티처콜 상담을 위한 보고서 자동 생성을 지원하는 Google Gem입니다.', url:'https://gemini.google.com/gem/1e7_bA2WcJ9tXrq6-1EDI-dnF3qM66QHr?usp=sharing' },
   { name:'통합사례보고서', icon:'📂', cat:'생산성', desc:'로컬에서 실행되는 통합사례보고서 자동 생성 프로그램입니다. 실행 중일 때만 접속 가능합니다.', url:'http://localhost:8765', local:true },
+  { name:'논문 검색', icon:'🔎', cat:'생산성', desc:'KCI 국내 상담 논문을 검색하고 CSV·Notion으로 저장하는 로컬 프로그램입니다. 이 PC에서만 열립니다.', url:'kcipapers://open', local:true, app:true },
 ];
 
 const grid = document.getElementById('grid');
@@ -195,7 +196,9 @@ function openModal(g) {
   document.getElementById('m-desc').textContent = g.desc;
   const link = document.getElementById('m-link');
   link.href = g.url;
+  link.target = g.app ? '_self' : '_blank';
   link.textContent = g.local ? '프로그램 열기' : '프로젝트 열기';
+  document.getElementById('m-local-note').textContent = g.app ? '⚠️ 이 프로그램은 설정을 마친 이 PC에서만 열립니다.' : '⚠️ 이 프로그램은 같은 PC에서 실행 중일 때만 접속 가능합니다.';
   link.className = 'btn-open' + (g.local ? ' green' : '');
   document.getElementById('m-local-note').style.display = g.local ? 'block' : 'none';
   document.getElementById('overlay').classList.add('open');
